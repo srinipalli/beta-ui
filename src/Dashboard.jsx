@@ -3,6 +3,7 @@ import axios from 'axios'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6']
 
+
 function PieChartCard({ title, data, dataKey, nameKey }) {
   return (
     <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48">
@@ -65,35 +66,38 @@ function PriorityChartCard({ data }) {
 }
 
 function InfoCard({ title, value, error, loading }) {
-  return (
-    <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-200">
-      <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
-      {loading ? (
-        <p className="text-gray-400">Loading...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : (
-        <p className="text-6xl font-bold text-blue-600">{value}</p>
-      )}
-    </div>
+    return (
+        <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
+        {loading ? (
+            <p className="text-gray-400">Loading...</p>
+        ) : error ? (
+            <p className="text-red-500">{error}</p>
+        ) : (
+            <p className="text-6xl font-bold text-blue-600">{value}</p>
+        )}
+        </div>
   )
 }
 
 function TicketTable({ tickets, details, onView, onSort, sortColumn, sortOrder }) {
-  const handleView = (ticketId) => {
-    const detail = details.find(t => String(t.ticket_id) === String(ticketId))
-    if (detail) onView(detail)
-  }
+    const handleView = (ticketId) => {
+        const detail = details.find(t => String(t.ticket_id) === String(ticketId))
+        if (detail) onView(detail)
+    }
 
-  if (!tickets || tickets.length === 0) {
-    return <p className="text-gray-500">No processed tickets found.</p>
-  }
+    if (!tickets || tickets.length === 0) {
+        return <p className="text-gray-500">No processed tickets found.</p>
+    }
 
-  return (
-    <div className="overflow-x-auto">
-      <div className="max-h-[60vh] overflow-y-auto">
+    return (
+    <div className="flex-1 overflow-x-auto">
+        <div
+        className="overflow-y-auto border rounded-lg transition-all duration-500"
+        style={{ maxHeight: '650px' }}
+        >
         <table className="min-w-full bg-white shadow-md rounded-lg table-fixed">
-          <thead className="bg-gray-200 sticky top-0 z-10">
+        <thead className="bg-gray-200 sticky top-0 z-10">
             <tr>
               {["ticket_id", "title", "priority", "category", "status", "assigned_to", "source"].map(col => (
                 <th key={col} className="px-4 py-2 text-left text-black">
@@ -111,7 +115,7 @@ function TicketTable({ tickets, details, onView, onSort, sortColumn, sortOrder }
               <th className="px-4 py-2 text-left text-black">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100">
             {tickets.map((ticket, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="px-4 py-2 text-black">{ticket.ticket_id}</td>
@@ -178,28 +182,28 @@ export default function Dashboard({ onView }) {
         setProcessedTickets(res.data.table_contents)
         setTicketDetails(res.data.details)
         setFilterOptions({
-          priority: ['L1', 'L2', 'L3', 'L4', 'L5'],
-          category: res.data.distinct_categories,
-          status: res.data.distinct_status,
-          assigned_to: res.data.distinct_assigned_to,
-          source: res.data.distinct_sources
+            priority: ['L1', 'L2', 'L3', 'L4', 'L5'],
+            category: res.data.distinct_categories,
+            status: res.data.distinct_status,
+            assigned_to: res.data.distinct_assigned_to,
+            source: res.data.distinct_sources
         })
         const counts = ['L1', 'L2', 'L3', 'L4', 'L5'].map(level => ({
-          priority: level,
-          count: res.data.table_contents.filter(ticket => ticket.priority === level).length
+            priority: level,
+            count: res.data.table_contents.filter(ticket => ticket.priority === level).length
         }))
         setPriorityCounts(counts)
         const statusCounts = res.data.distinct_status.map(status => ({
-            status,
-            count: res.data.table_contents.filter(ticket => ticket.status === status).length
-            }))
-            setStatusCounts(statusCounts)
-        const sourceCounts = res.data.distinct_sources.map(source => ({
-        source,
-        count: res.data.table_contents.filter(ticket => ticket.source === source).length
+                status,
+                count: res.data.table_contents.filter(ticket => ticket.status === status).length
+                }))
+                setStatusCounts(statusCounts)
+            const sourceCounts = res.data.distinct_sources.map(source => ({
+            source,
+            count: res.data.table_contents.filter(ticket => ticket.source === source).length
         }))
         setSourceCounts(sourceCounts)
-      })
+    })
       .catch(err => {
         console.error("Error fetching ticket data:", err)
         setError("Failed to load ticket data.")
@@ -239,8 +243,8 @@ export default function Dashboard({ onView }) {
   }
 
   return (
-    <div className="w-screen h-screen bg-gray-50 overflow-auto">
-      <div className="max-w-7xl mx-auto px-4 py-8 h-full flex flex-col">
+    <div className="w-screen h-screen overflow-y-auto bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">Ticket Dashboard</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -321,17 +325,16 @@ export default function Dashboard({ onView }) {
             <div className="w-full text-sm text-gray-600 ml-1">
             {filteredAndSortedTickets.length} ticket{filteredAndSortedTickets.length !== 1 ? 's' : ''} found
             </div>
-
         </div>
-
         <TicketTable
-          tickets={filteredAndSortedTickets}
-          details={ticketDetails}
-          onView={onView}
-          onSort={handleSort}
-          sortColumn={sortColumn}
-          sortOrder={sortOrder}
+        tickets={filteredAndSortedTickets}
+        details={ticketDetails}
+        onView={onView}
+        onSort={handleSort}
+        sortColumn={sortColumn}
+        sortOrder={sortOrder}
         />
+
       </div>
     </div>
   )
