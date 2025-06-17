@@ -116,8 +116,46 @@ and a.assigned_id = e.employee_id;""")
         "ticket_count": len(ticket_ids),
         "table_contents": final_table,
         "details":details,
+        "distinct_priorities":[f"L{i}" for i in range(1,6)],
         "distinct_categories":clist,
         "distinct_status":slist,
         "distinct_assigned_to":elist,
         "distinct_sources":sourcelist
     }
+    
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from ticketbackend.database import get_connection
+from ticketbackend.assign import assign_ticket
+router = APIRouter()
+from ticketbackend.models import TicketUpdate
+
+
+@app.put("/tickets/{ticket_id}")
+def update_ticket(ticket_id: str, update: TicketUpdate):
+    print("=== Update Request ===")
+    print("Ticket ID:", ticket_id)
+    print("Payload:", update)
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE processed
+            SET priority = %s,
+                status = %s,
+                category = %s
+            WHERE ticket_id = %s
+        """, (update.priority, update.status, update.category, ticket_id))
+        conn.commit()
+        assign_ticket(ticket_id,conn)
+        cursor.close()
+        conn.close()
+        print(f"Updated ticket {ticket_id} with priority={update.priority}, status={update.status}, category={update.category}")
+
+        return {"message": "Ticket updated successfully"}
+    except Exception as e:
+        import traceback
+        print("🔥 ERROR updating ticket:")
+        traceback.print_exc()  # <== This gives full error trace
+        raise HTTPException(status_code=500, detail=str(e))

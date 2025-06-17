@@ -31,21 +31,109 @@ import axios from 'axios'
 import { HelpCircle } from 'lucide-react'
 
 function TicketDetails({ ticket }) {
-  const [showPriorityReason, setShowPriorityReason] = useState(false)
-  const [showCategoryReason, setShowCategoryReason] = useState(false)
+    const [showPriorityReason, setShowPriorityReason] = useState(false)
+    const [showCategoryReason, setShowCategoryReason] = useState(false)
+    const [editMode, setEditMode] = useState(false)
+    const [saving, setSaving] = useState(false)
+
+    const [formData, setFormData] = useState({
+        priority: ticket.ticket_priority,
+        status: ticket.ticket_status,
+        category: ticket.ticket_category
+    })
+
+    const [options, setOptions] = useState({
+        priorities: [],
+        categories: [],
+        statuses: []
+    })
+        useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+            const res = await axios.get("http://localhost:8000/ticket_data")
+            setOptions({
+                priorities: res.data.distinct_priorities || [],
+                categories: res.data.distinct_categories || [],
+                statuses: res.data.distinct_status || [],
+            })
+            } catch (err) {
+            console.error("Failed to fetch metadata:", err)
+            alert("Failed to load dropdown options.")
+            }
+        }
+
+        fetchOptions()
+        }, [])
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await axios.put(`http://localhost:8000/tickets/${ticket.ticket_id}`, {
+        priority: formData.priority,
+        status: formData.status,
+        category: formData.category
+      })
+      console.log("Sending update for:", formData)
+      setEditMode(false)
+    } catch (err) {
+      console.error("Failed to update ticket:", err)
+      alert("Error saving ticket changes.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setFormData({
+      priority: ticket.ticket_priority,
+      status: ticket.ticket_status,
+      category: ticket.ticket_category
+    })
+    setEditMode(false)
+  }
 
   return (
     <div className="w-full min-h-screen px-8 py-12 bg-gray-50">
-      <div className="max-w-screen mx-auto max-h-screen bg-white rounded-2xl shadow-xl p-10 space-y-12">
+      <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl p-10 space-y-12">
+        {/* Top bar */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-4xl font-bold text-gray-800">
+            Ticket #{ticket.ticket_id}
+          </h2>
+          {!editMode ? (
+            <button
+              onClick={() => setEditMode(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
+            >
+              Edit Ticket
+            </button>
+          ) : (
+            <div className="flex space-x-3">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+              <button
+                onClick={handleCancel}
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-lg text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* LEFT COLUMN */}
           <div className="space-y-10">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-800">
-                Ticket #{ticket.ticket_id}
-              </h2>
-            </div>
-
             <div>
               <h3 className="text-sm font-semibold text-gray-500 mb-2">Ticket Title</h3>
               <p className="text-xl text-gray-800">{ticket.ticket_title}</p>
@@ -53,16 +141,12 @@ function TicketDetails({ ticket }) {
 
             <div>
               <h3 className="text-sm font-semibold text-gray-500 mb-2">AI Summary</h3>
-              <p className="text-gray-700 text-lg">
-                {ticket.ticket_summary || <em className="text-gray-400">Not available</em>}
-              </p>
+              <p className="text-gray-700 text-lg">{ticket.ticket_summary || <em className="text-gray-400">Not available</em>}</p>
             </div>
 
             <div>
               <h3 className="text-sm font-semibold text-gray-500 mb-2">AI Suggested Solution</h3>
-              <p className="text-gray-700 text-lg">
-                {ticket.ticket_solution || <em className="text-gray-400">Not available</em>}
-              </p>
+              <p className="text-gray-700 text-lg">{ticket.ticket_solution || <em className="text-gray-400">Not available</em>}</p>
             </div>
           </div>
 
@@ -76,15 +160,23 @@ function TicketDetails({ ticket }) {
             <div>
               <h3 className="text-sm font-semibold text-gray-500 mb-2">Priority (AI)</h3>
               <div className="flex items-center space-x-3">
-                <span className="px-4 py-1 rounded-full text-sm font-semibold bg-blue-500 text-white">
-                  {ticket.ticket_priority}
-                </span>
-                <button
-                  onClick={() => setShowPriorityReason(!showPriorityReason)}
-                  className="text-gray-500 hover:text-gray-700"
-                  aria-label="Show priority reason"
-                >
-                  <HelpCircle size={18} />
+                {editMode ? (
+                    <select
+                    value={formData.priority}
+                    onChange={(e) => handleChange("priority", e.target.value)}
+                    className="appearance-none bg-white border border-gray-300 text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    {options.priorities.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                    ))}
+                    </select>
+                ) : (
+                  <span className="px-4 py-1 rounded-full text-sm font-semibold bg-blue-500 text-white">
+                    {formData.priority}
+                  </span>
+                )}
+                <button onClick={() => setShowPriorityReason(!showPriorityReason)}>
+                  <HelpCircle size={18} className="text-gray-500 hover:text-gray-700" />
                 </button>
               </div>
               {showPriorityReason && (
@@ -95,15 +187,23 @@ function TicketDetails({ ticket }) {
             <div>
               <h3 className="text-sm font-semibold text-gray-500 mb-2">AI Assigned Category</h3>
               <div className="flex items-center space-x-3">
-                <span className="px-4 py-1 rounded-full text-sm font-semibold bg-green-500 text-white">
-                  {ticket.ticket_category}
-                </span>
-                <button
-                  onClick={() => setShowCategoryReason(!showCategoryReason)}
-                  className="text-gray-500 hover:text-gray-700"
-                  aria-label="Show category reason"
-                >
-                  <HelpCircle size={18} />
+                {editMode ? (
+                    <select
+                    value={formData.category}
+                    onChange={(e) => handleChange("category", e.target.value)}
+                    className="appearance-none bg-white border border-gray-300 text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    {options.categories.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                    ))}
+                    </select>
+                ) : (
+                  <span className="px-4 py-1 rounded-full text-sm font-semibold bg-green-500 text-white">
+                    {formData.category}
+                  </span>
+                )}
+                <button onClick={() => setShowCategoryReason(!showCategoryReason)}>
+                  <HelpCircle size={18} className="text-gray-500 hover:text-gray-700" />
                 </button>
               </div>
               {showCategoryReason && (
@@ -113,7 +213,19 @@ function TicketDetails({ ticket }) {
 
             <div>
               <h3 className="text-sm font-semibold text-gray-500 mb-2">Status</h3>
-              <p className="text-gray-800 text-lg">{ticket.ticket_status}</p>
+              {editMode ? (
+                <select
+                value={formData.status}
+                onChange={(e) => handleChange("status", e.target.value)}
+                className="appearance-none bg-white border border-gray-300 text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                {options.statuses.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                ))}
+                </select>
+              ) : (
+                <p className="text-gray-800 text-lg">{formData.status}</p>
+              )}
             </div>
 
             <div>
