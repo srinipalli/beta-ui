@@ -158,7 +158,7 @@ function TicketDetails({ ticket }) {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Priority (AI)</h3>
+              <h3 className="text-sm font-semibold text-gray-500 mb-2">Triage Level (AI)</h3>
               <div className="flex items-center space-x-3">
                 {editMode ? (
                     <select

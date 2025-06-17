@@ -607,7 +607,7 @@ export default function Dashboard({ onView }) {
               }}
             >
               <option value="">Filter by</option>
-              <option value="priority">Priority</option>
+              <option value="priority">Triage</option>
               <option value="category">Category</option>
               <option value="status">Status</option>
               <option value="assigned_to">Assigned To</option>
