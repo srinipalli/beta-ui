@@ -258,44 +258,151 @@ function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
   )
 }
 
+// function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
+//     const navigate = useNavigate()
+//     const handleView = (ticketId) => {
+//       navigate(`/ticket/${ticketId}`)
+//     }
+
+//     if (!tickets || tickets.length === 0) {
+//         return <p className="text-gray-500">No processed tickets found.</p>
+//     }
+
+//     return (
+//     <div className="flex-1 overflow-x-auto">
+//         <div
+//         className="overflow-y-auto border rounded-lg transition-all duration-500"
+//         style={{ maxHeight: '650px' }}
+//         >
+//         <table className="min-w-full bg-white shadow-md rounded-lg table-fixed">
+//         <thead className="bg-gray-200 sticky top-0 z-10">
+//             <tr>
+//               {["ticket_id", "title", "priority", "category", "status", "assigned_to", "source"].map(col => (
+//                 <th key={col} className="px-4 py-2 text-left text-black">
+//                   <div className="flex items-center space-x-1">
+//                     <span>{col.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+//                     <button
+//                       onClick={() => onSort(col)}
+//                       className="text-xs text-blue-500 hover:underline"
+//                     >
+//                       {sortColumn === col ? (sortOrder === 'asc' ? '⬆︎' : '⬇︎') : '⬇︎'}
+//                     </button>
+//                   </div>
+//                 </th>
+//               ))}
+//               <th className="px-4 py-2 text-left text-black">Actions</th>
+//             </tr>
+//           </thead>
+//         <tbody className="divide-y divide-gray-100">
+//             {tickets.map((ticket, index) => (
+//               <tr key={index} className="hover:bg-gray-50">
+//                 <td className="px-4 py-2 text-black">{ticket.ticket_id}</td>
+//                 <td className="px-4 py-2 text-black">{ticket.title}</td>
+//                 <td className="px-4 py-2">
+//                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+//                     ticket.priority === 'L1' ? 'bg-red-500 text-white'
+//                       : ticket.priority === 'L2' ? 'bg-orange-400 text-white'
+//                         : ticket.priority === 'L3' ? 'bg-yellow-300 text-black'
+//                           : ticket.priority === 'L4' ? 'bg-green-400 text-green-950'
+//                             : 'bg-blue-400 text-blue-50'
+//                   }`}>
+//                     {ticket.priority}
+//                   </span>
+//                 </td>
+//                 <td className="px-4 py-2 text-black">{ticket.category}</td>
+//                 <td className="px-4 py-2 text-black">{ticket.status}</td>
+//                 <td className="px-4 py-2 text-black">{ticket.employee_name}</td>
+//                 <td className="px-4 py-2 text-black">{ticket.source}</td>
+//                 <td className="px-4 py-2 text-black">
+//                   <button
+//                     onClick={() => handleView(ticket.ticket_id)}
+//                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+//                   >
+//                     View
+//                   </button>
+//                 </td>
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       </div>
+//     </div>
+//   )
+// }
 function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
-    const navigate = useNavigate()
-    const handleView = (ticketId) => {
-      navigate(`/ticket/${ticketId}`)
-    }
+  const navigate = useNavigate()
 
-    if (!tickets || tickets.length === 0) {
-        return <p className="text-gray-500">No processed tickets found.</p>
-    }
+  const handleView = (ticketId) => {
+    navigate(`/ticket/${ticketId}`)
+  }
 
-    return (
+  const getPriorityLabel = (level) => {
+    switch (level) {
+      case 'L1': return 'Critical'
+      case 'L2': return 'High'
+      case 'L3': return 'Medium'
+      case 'L4': return 'Low'
+      case 'L5': return 'Planning'
+      default: return level
+    }
+  }
+
+  if (!tickets || tickets.length === 0) {
+    return <p className="text-gray-500">No processed tickets found.</p>
+  }
+
+  return (
     <div className="flex-1 overflow-x-auto">
-        <div
-        className="overflow-y-auto border rounded-lg transition-all duration-500"
-        style={{ maxHeight: '650px' }}
-        >
+      <div className="overflow-y-auto border rounded-lg transition-all duration-500" style={{ maxHeight: '650px' }}>
         <table className="min-w-full bg-white shadow-md rounded-lg table-fixed">
-        <thead className="bg-gray-200 sticky top-0 z-10">
+          <thead className="bg-gray-200 sticky top-0 z-10">
             <tr>
-              {["ticket_id", "title", "priority", "category", "status", "assigned_to", "source"].map(col => (
-                <th key={col} className="px-4 py-2 text-left text-black">
+              {[
+                { key: "source", label: "Project Name" },
+                { key: "ticket_id", label: "Ticket ID" },
+                { key: "title", label: "Title" },
+                {
+                  key: "priority",
+                  label: (
+                    <span>
+                      Triage Level <span className="text-xs text-gray-500">(AI generated)</span>
+                    </span>
+                  )
+                },
+                {
+                  key: "category",
+                  label: (
+                    <span>
+                      Category <span className="text-xs text-gray-500">(AI generated)</span>
+                    </span>
+                  )
+                },
+                { key: "status", label: "Status" },
+                { key: "assigned_to", label: "Suggested Employee" },
+                { key: "ticket_priority", label: "Ticket Priority" }
+              ].map(col => (
+                <th key={col.key} className="px-4 py-2 text-left text-black">
                   <div className="flex items-center space-x-1">
-                    <span>{col.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
-                    <button
-                      onClick={() => onSort(col)}
-                      className="text-xs text-blue-500 hover:underline"
-                    >
-                      {sortColumn === col ? (sortOrder === 'asc' ? '⬆︎' : '⬇︎') : '⬇︎'}
-                    </button>
+                    <span>{col.label}</span>
+                    {col.key !== 'ticket_priority' && (
+                      <button
+                        onClick={() => onSort(col.key)}
+                        className="text-xs text-blue-500 hover:underline"
+                      >
+                        {sortColumn === col.key ? (sortOrder === 'asc' ? '⬆︎' : '⬇︎') : '⬇︎'}
+                      </button>
+                    )}
                   </div>
                 </th>
               ))}
               <th className="px-4 py-2 text-left text-black">Actions</th>
             </tr>
           </thead>
-        <tbody className="divide-y divide-gray-100">
+
+          <tbody className="divide-y divide-gray-100">
             {tickets.map((ticket, index) => (
               <tr key={index} className="hover:bg-gray-50">
+                <td className="px-4 py-2 text-black">{ticket.source}</td>
                 <td className="px-4 py-2 text-black">{ticket.ticket_id}</td>
                 <td className="px-4 py-2 text-black">{ticket.title}</td>
                 <td className="px-4 py-2">
@@ -312,7 +419,7 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                 <td className="px-4 py-2 text-black">{ticket.category}</td>
                 <td className="px-4 py-2 text-black">{ticket.status}</td>
                 <td className="px-4 py-2 text-black">{ticket.employee_name}</td>
-                <td className="px-4 py-2 text-black">{ticket.source}</td>
+                <td className="px-4 py-2 text-black">{getPriorityLabel(ticket.priority)}</td>
                 <td className="px-4 py-2 text-black">
                   <button
                     onClick={() => handleView(ticket.ticket_id)}
@@ -324,11 +431,13 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
               </tr>
             ))}
           </tbody>
+
         </table>
       </div>
     </div>
   )
 }
+
 
 export default function Dashboard({ onView }) {
     const [ticketCount, setTicketCount] = useState(0)

@@ -155,7 +155,4 @@ def update_ticket(ticket_id: str, update: TicketUpdate):
 
         return {"message": "Ticket updated successfully"}
     except Exception as e:
-        import traceback
-        print("🔥 ERROR updating ticket:")
-        traceback.print_exc()  # <== This gives full error trace
         raise HTTPException(status_code=500, detail=str(e))
