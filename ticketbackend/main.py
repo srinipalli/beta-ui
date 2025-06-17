@@ -23,7 +23,7 @@ def get_ticket_count():
     conn.close()
     return ticketcount
 
-@app.get("/ticket_data")
+
 @app.get("/ticket_data")
 def get_ticket_data():
     conn = get_connection()

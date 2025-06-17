@@ -1,19 +1,14 @@
-import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import Dashboard from './Dashboard'
-import TicketDetailsModal from './TicketDetailsModal'
+import TicketDetailsPage from './TicketDetailsPage'
 
 function App() {
-  const [selectedTicket, setSelectedTicket] = useState(null)
-
   return (
     <div className="relative">
-      <Dashboard onView={setSelectedTicket} />
-      {selectedTicket && (
-        <TicketDetailsModal
-          ticket={selectedTicket}
-          onClose={() => setSelectedTicket(null)}
-        />
-      )}
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/ticket/:id" element={<TicketDetailsPage />} />
+      </Routes>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6']
@@ -80,10 +81,10 @@ function InfoCard({ title, value, error, loading }) {
   )
 }
 
-function TicketTable({ tickets, details, onView, onSort, sortColumn, sortOrder }) {
+function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
+    const navigate = useNavigate()
     const handleView = (ticketId) => {
-        const detail = details.find(t => String(t.ticket_id) === String(ticketId))
-        if (detail) onView(detail)
+      navigate(`/ticket/${ticketId}`)
     }
 
     if (!tickets || tickets.length === 0) {
