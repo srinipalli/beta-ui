@@ -13,6 +13,7 @@ U = os.getenv("MYSQL_USER")
 P = os.getenv("MYSQL_PASSWORD")
 
 def assign_ticket(ticket_id: str, conn):
+    print("ABOUT TO ASSIGN 🥶")
     try:
         cursor = conn.cursor()
 

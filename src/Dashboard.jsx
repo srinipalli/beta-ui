@@ -229,8 +229,8 @@ function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
     L1: "#EF4444",   // red-500
     L2: "#FB923C",   // orange-400
     L3: "#FCD34D",   // yellow-300
-    L4: "#4ADE80",   // green-400
-    L5: "#60A5FA"    // blue-400
+    L4: "#896129",   // brown (yellow 700 ig)
+    L5: "#6FC276"    // blue-400 (green rn)
   }
 
   return (
@@ -409,9 +409,9 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     ticket.priority === 'L1' ? 'bg-red-500 text-white'
                       : ticket.priority === 'L2' ? 'bg-orange-400 text-white'
-                        : ticket.priority === 'L3' ? 'bg-yellow-300 text-black'
-                          : ticket.priority === 'L4' ? 'bg-green-400 text-green-950'
-                            : 'bg-blue-400 text-blue-50'
+                        : ticket.priority === 'L3' ? 'bg-yellow-400 text-white'
+                          : ticket.priority === 'L4' ? 'bg-yellow-700 text-white'
+                            : 'bg-green-600 text-white'
                   }`}>
                     {ticket.priority}
                   </span>

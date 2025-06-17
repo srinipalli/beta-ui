@@ -139,15 +139,18 @@ def update_ticket(ticket_id: str, update: TicketUpdate):
     try:
         conn = get_connection()
         cursor = conn.cursor()
-
+        print("ABOUT TO DO SQL CHANGE 🤢")
         cursor.execute("""
             UPDATE processed
             SET priority = %s,
-                status = %s,
                 category = %s
             WHERE ticket_id = %s
-        """, (update.priority, update.status, update.category, ticket_id))
+        """, (update.priority, update.category, ticket_id))
         conn.commit()
+        cursor.execute("""UPDATE main_table
+        SET status = %s
+        WHERE ticket_id = %s
+        """, (update.status, ticket_id))
         assign_ticket(ticket_id,conn)
         cursor.close()
         conn.close()
