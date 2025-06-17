@@ -5,79 +5,256 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6']
 
 
-function PieChartCard({ title, data, dataKey, nameKey }) {
-  return (
-    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48">
-      <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
-      <ResponsiveContainer width="100%" height="80%">
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey={dataKey}
-            nameKey={nameKey}
-            cx="50%"
-            cy="50%"
-            outerRadius={50}
-            label
-          >
-            {data.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend layout="vertical" verticalAlign="right" align="right"/>
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
+// function PieChartCard({ title, data, dataKey, nameKey }) {
+//   return (
+//     <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48">
+//       <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
+//       <ResponsiveContainer width="100%" height="80%">
+//         <PieChart>
+//           <Pie
+//             data={data}
+//             dataKey={dataKey}
+//             nameKey={nameKey}
+//             cx="50%"
+//             cy="50%"
+//             outerRadius={50}
+//             label
+//           >
+//             {data.map((_, index) => (
+//               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+//             ))}
+//           </Pie>
+//           <Tooltip />
+//           <Legend layout="vertical" verticalAlign="right" align="right"/>
+//         </PieChart>
+//       </ResponsiveContainer>
+//     </div>
+//   )
+// }
 
-function BarChartCard({ title, data, dataKeyX, dataKeyY, color }) {
-  return (
-    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48 text-black">
-      <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
-      <ResponsiveContainer className = "-translate-x-1/12" width="100%" height="80%">
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={dataKeyX} />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Bar dataKey={dataKeyY} fill={color || "#3B82F6"} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
+// function BarChartCard({ title, data, dataKeyX, dataKeyY, color }) {
+//   return (
+//     <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48 text-black">
+//       <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
+//       <ResponsiveContainer className = "-translate-x-1/12" width="100%" height="80%">
+//         <BarChart data={data}>
+//           <CartesianGrid strokeDasharray="3 3" />
+//           <XAxis dataKey={dataKeyX} />
+//           <YAxis allowDecimals={false} />
+//           <Tooltip />
+//           <Bar dataKey={dataKeyY} fill={color || "#3B82F6"} />
+//         </BarChart>
+//       </ResponsiveContainer>
+//     </div>
+//   )
+// }
 
-function PriorityChartCard({ data }) {
-  return (
-    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48">
-      <h2 className="text-lg font-semibold text-gray-700 mb-2">Ticket Priorities</h2>
-      <ResponsiveContainer width="100%" height="80%">
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="priority" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Bar dataKey="count" fill="#3B82F6" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
+// function PriorityChartCard({ data }) {
+//   return (
+//     <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48">
+//       <h2 className="text-lg font-semibold text-gray-700 mb-2">Ticket Priorities</h2>
+//       <ResponsiveContainer width="100%" height="80%">
+//         <BarChart data={data}>
+//           <CartesianGrid strokeDasharray="3 3" />
+//           <XAxis dataKey="priority" />
+//           <YAxis allowDecimals={false} />
+//           <Tooltip />
+//           <Bar dataKey="count" fill="#3B82F6" />
+//         </BarChart>
+//       </ResponsiveContainer>
+//     </div>
+//   )
+// }
 
-function InfoCard({ title, value, error, loading }) {
+// function InfoCard({ title, value, error, loading }) {
+//     return (
+//         <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-200">
+//         <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
+//         {loading ? (
+//             <p className="text-gray-400">Loading...</p>
+//         ) : error ? (
+//             <p className="text-red-500">{error}</p>
+//         ) : (
+//             <p className="text-6xl font-bold text-blue-600">{value}</p>
+//         )}
+//         </div>
+//   )
+// }
+function CombinedInfoCard({ ticketCount, sourceData }) {
+  // Custom label to show actual count
+  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
+    const RADIAN = Math.PI / 180
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+    const x = cx + radius * Math.cos(-midAngle * RADIAN)
+    const y = cy + radius * Math.sin(-midAngle * RADIAN)
+    const value = sourceData[index].count
+
     return (
-        <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
-        {loading ? (
-            <p className="text-gray-400">Loading...</p>
-        ) : error ? (
-            <p className="text-red-500">{error}</p>
-        ) : (
-            <p className="text-6xl font-bold text-blue-600">{value}</p>
-        )}
+      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
+        {value}
+      </text>
+
+    )
+  }
+
+  return (
+    <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-200 h-[320px] flex flex-col">
+      <h2 className="text-lg font-semibold text-gray-700">Ticket Overview</h2>
+
+      <div className="text-5xl font-bold text-blue-600 mt-2">{ticketCount}</div>
+
+      <div className="flex flex-1 items-center justify-between mt-4 gap-4">
+        {/* Pie Chart */}
+        <div className="w-1/2 flex justify-center items-center">
+          <ResponsiveContainer width={140} height={140}>
+            <PieChart>
+              <Pie
+                data={sourceData}
+                dataKey="count"
+                nameKey="source"
+                cx="50%"
+                cy="50%"
+                outerRadius={60}
+                label={renderCustomLabel}
+                labelLine={false}
+              >
+                {sourceData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
+
+        {/* Legend */}
+        <div className="w-1/2 text-sm text-gray-700 space-y-1">
+          {sourceData.map((entry, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+              ></div>
+              <span>{entry.source} ({entry.count})</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PieChartCard({ title, data, dataKey, nameKey }) {
+  // Custom label to show actual count inside the pie slice
+  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
+    const RADIAN = Math.PI / 180
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+    const x = cx + radius * Math.cos(-midAngle * RADIAN)
+    const y = cy + radius * Math.sin(-midAngle * RADIAN)
+    const value = data[index][dataKey]
+
+    return (
+      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
+        {value}
+      </text>
+    )
+  }
+
+  return (
+    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-[320px] flex flex-col">
+      <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
+
+      <div className="flex flex-1 items-center justify-between mt-2 gap-4">
+        {/* Pie Chart */}
+        <div className="w-1/2 flex justify-center items-center">
+          <ResponsiveContainer width={140} height={140}>
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey={dataKey}
+                nameKey={nameKey}
+                cx="50%"
+                cy="50%"
+                outerRadius={60}
+                label={renderCustomLabel}
+                labelLine={false}
+              >
+                {data.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Custom Legend */}
+        <div className="w-1/2 text-sm text-gray-700 space-y-1">
+          {data.map((entry, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+              ></div>
+              <span>{entry[nameKey]} ({entry[dataKey]})</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// function BarChartCard({ title, data, dataKeyX, dataKeyY, color }) {
+//   return (
+//     <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 min-h-[300px] text-black">
+//       <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
+//       <div className="h-64">
+//         <ResponsiveContainer width="100%" height="100%">
+//           <BarChart data={data}>
+//             <CartesianGrid strokeDasharray="3 3" />
+//             <XAxis dataKey={dataKeyX} />
+//             <YAxis allowDecimals={false} />
+//             <Tooltip />
+//             <Bar dataKey={dataKeyY} fill={color || "#3B82F6"} />
+//           </BarChart>
+//         </ResponsiveContainer>
+//       </div>
+//     </div>
+//   )
+// }
+
+function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
+  const priorityColors = {
+    L1: "#EF4444",   // red-500
+    L2: "#FB923C",   // orange-400
+    L3: "#FCD34D",   // yellow-300
+    L4: "#4ADE80",   // green-400
+    L5: "#60A5FA"    // blue-400
+  }
+
+  return (
+    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 min-h-[300px] text-black">
+      <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey={dataKeyX} />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Bar dataKey={dataKeyY}>
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={priorityColors[entry[dataKeyX]] || "#3B82F6"} // fallback blue
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   )
 }
 
@@ -157,8 +334,8 @@ export default function Dashboard({ onView }) {
     const [ticketCount, setTicketCount] = useState(0)
     const [processedTickets, setProcessedTickets] = useState([])
     const [ticketDetails, setTicketDetails] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    // const [loading, setLoading] = useState(true)
+    // const [error, setError] = useState(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [filterType, setFilterType] = useState('')
     const [filterValue, setFilterValue] = useState('')
@@ -170,6 +347,7 @@ export default function Dashboard({ onView }) {
         source: []
     })
     const [priorityCounts, setPriorityCounts] = useState([])
+    const [categoryCounts, setCategoryCounts] = useState([])
     const [sortColumn, setSortColumn] = useState(null)
     const [sortOrder, setSortOrder] = useState('asc')
     const [statusCounts, setStatusCounts] = useState([])
@@ -182,6 +360,7 @@ export default function Dashboard({ onView }) {
         setTicketCount(res.data.ticket_count)
         setProcessedTickets(res.data.table_contents)
         setTicketDetails(res.data.details)
+        setCategoryCounts(res.data.distinct_categories)
         setFilterOptions({
             priority: ['L1', 'L2', 'L3', 'L4', 'L5'],
             category: res.data.distinct_categories,
@@ -193,6 +372,7 @@ export default function Dashboard({ onView }) {
             priority: level,
             count: res.data.table_contents.filter(ticket => ticket.priority === level).length
         }))
+        
         setPriorityCounts(counts)
         const statusCounts = res.data.distinct_status.map(status => ({
                 status,
@@ -204,12 +384,19 @@ export default function Dashboard({ onView }) {
             count: res.data.table_contents.filter(ticket => ticket.source === source).length
         }))
         setSourceCounts(sourceCounts)
+              const categoryCounts = res.data.distinct_categories.map(category => ({
+        category,
+        count: res.data.table_contents.filter(ticket => ticket.category === category).length
+      }))
+      setCategoryCounts(categoryCounts)
+
+
     })
-      .catch(err => {
-        console.error("Error fetching ticket data:", err)
-        setError("Failed to load ticket data.")
-      })
-      .finally(() => setLoading(false))
+      // .catch(err => {
+      //   console.error("Error fetching ticket data:", err)
+      //   setError("Failed to load ticket data.")
+      // })
+      // .finally(() => setLoading(false))
   }, [])
 
   const filteredAndSortedTickets = processedTickets
@@ -248,7 +435,7 @@ export default function Dashboard({ onView }) {
       <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">Ticket Dashboard</h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <InfoCard title="Total Tickets" value={ticketCount} error={error} loading={loading} />
             <BarChartCard
             title="Ticket Priorities"
@@ -270,7 +457,14 @@ export default function Dashboard({ onView }) {
             dataKey="count"
             nameKey="source"
             />
+        </div> */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <CombinedInfoCard ticketCount={ticketCount} sourceData={sourceCounts} />
+          <BarChartCard title="Ticket Priorities" data={priorityCounts} dataKeyX="priority" dataKeyY="count" />
+          <BarChartCard title="Ticket Statuses" data={statusCounts} dataKeyX="status" dataKeyY="count" />
+          <PieChartCard title="Category Distribution" data={categoryCounts} dataKey="count" nameKey="category" />
         </div>
+
 
         <h2 className="text-xl font-semibold mb-2 text-gray-700">Ticket Details</h2>
         <div className="flex flex-wrap items-center justify-between gap-1 mb-2 bg-white p-4 rounded-xl shadow-sm">
