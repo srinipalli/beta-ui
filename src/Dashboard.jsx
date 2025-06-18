@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6']
-
+import Chatbot from './Chatbot' // or './components/Chatbot'
 
 // function PieChartCard({ title, data, dataKey, nameKey }) {
 //   return (
@@ -540,33 +540,10 @@ export default function Dashboard({ onView }) {
   }
 
   return (
-    <div className="w-screen h-screen overflow-y-auto bg-gray-50">
+    <div className="w-screen h-screen overflow-y-auto bg-gray-50 relative">
       <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">Ticket Dashboard</h1>
 
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <InfoCard title="Total Tickets" value={ticketCount} error={error} loading={loading} />
-            <BarChartCard
-            title="Ticket Priorities"
-            data={triageCounts}
-            dataKeyX="triage"
-            dataKeyY="count"
-            color="#3B82F6"
-            />
-          <BarChartCard
-            title="Ticket Statuses"
-            data={statusCounts}
-            dataKeyX="status"
-            dataKeyY="count"
-            color="#3B82F6"
-            />
-          <PieChartCard
-            title="Ticket Sources"
-            data={sourceCounts}
-            dataKey="count"
-            nameKey="source"
-            />
-        </div> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <CombinedInfoCard ticketCount={ticketCount} sourceData={sourceCounts} />
           <BarChartCard title="Ticket Priorities" data={triageCounts} dataKeyX="triage" dataKeyY="count" />
@@ -639,6 +616,9 @@ export default function Dashboard({ onView }) {
         sortOrder={sortOrder}
         />
 
+      </div>
+      <div className="fixed bottom-4 right-4 z-50">
+        <Chatbot />
       </div>
     </div>
   )

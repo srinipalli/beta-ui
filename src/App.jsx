@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import Dashboard from './Dashboard'
 import TicketDetailsPage from './TicketDetailsPage'
 
+
+
 function App() {
   return (
     <div className="relative">

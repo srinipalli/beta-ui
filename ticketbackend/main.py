@@ -1,9 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 try:
     from ticketbackend.database import get_connection
 except ImportError:
     from database import get_connection
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
+try:
+    from models import ChatQuery
+except ImportError:
+    from ticketbackend.models import ChatQuery
+# from ticketbackend.lang import get_qa_chain
+from ticketbackend.lang import get_ticket_qa_chain
+
 
 app = FastAPI()
 
@@ -159,3 +168,15 @@ def update_ticket(ticket_id: str, update: TicketUpdate):
         return {"message": "Ticket updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/chat")
+def chat_query(user_query: str = Query(...)):
+    print(f"Received query: {user_query}")
+    try:
+        response = get_ticket_qa_chain(user_query)
+        print("Response:", response)
+        return response
+    except Exception as e:
+        print("❌ Internal error:", e)
+        return {"error": str(e)}
