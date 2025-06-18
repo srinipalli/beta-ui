@@ -11,5 +11,5 @@ def get_connection():
         host=h,
         user=u,
         password=p,
-        database=d if d else "ticket"
+        database=d if d else "ticket2"
     )

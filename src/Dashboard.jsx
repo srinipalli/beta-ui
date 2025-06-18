@@ -49,14 +49,14 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6'
 //   )
 // }
 
-// function PriorityChartCard({ data }) {
+// function TriageChartCard({ data }) {
 //   return (
 //     <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-48">
 //       <h2 className="text-lg font-semibold text-gray-700 mb-2">Ticket Priorities</h2>
 //       <ResponsiveContainer width="100%" height="80%">
 //         <BarChart data={data}>
 //           <CartesianGrid strokeDasharray="3 3" />
-//           <XAxis dataKey="priority" />
+//           <XAxis dataKey="Triage" />
 //           <YAxis allowDecimals={false} />
 //           <Tooltip />
 //           <Bar dataKey="count" fill="#3B82F6" />
@@ -225,7 +225,7 @@ function PieChartCard({ title, data, dataKey, nameKey }) {
 // }
 
 function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
-  const priorityColors = {
+  const triageColors = {
     L1: "#EF4444",   // red-500
     L2: "#FB923C",   // orange-400
     L3: "#FCD34D",   // yellow-300
@@ -247,7 +247,7 @@ function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={priorityColors[entry[dataKeyX]] || "#3B82F6"} // fallback blue
+                  fill={triageColors[entry[dataKeyX]] || "#3B82F6"} // fallback blue
                 />
               ))}
             </Bar>
@@ -277,7 +277,7 @@ function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
 //         <table className="min-w-full bg-white shadow-md rounded-lg table-fixed">
 //         <thead className="bg-gray-200 sticky top-0 z-10">
 //             <tr>
-//               {["ticket_id", "title", "priority", "category", "status", "assigned_to", "source"].map(col => (
+//               {["ticket_id", "title", "triage", "category", "status", "assigned_to", "source"].map(col => (
 //                 <th key={col} className="px-4 py-2 text-left text-black">
 //                   <div className="flex items-center space-x-1">
 //                     <span>{col.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
@@ -300,13 +300,13 @@ function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
 //                 <td className="px-4 py-2 text-black">{ticket.title}</td>
 //                 <td className="px-4 py-2">
 //                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-//                     ticket.priority === 'L1' ? 'bg-red-500 text-white'
-//                       : ticket.priority === 'L2' ? 'bg-orange-400 text-white'
-//                         : ticket.priority === 'L3' ? 'bg-yellow-300 text-black'
-//                           : ticket.priority === 'L4' ? 'bg-green-400 text-green-950'
+//                     ticket.triage === 'L1' ? 'bg-red-500 text-white'
+//                       : ticket.triage === 'L2' ? 'bg-orange-400 text-white'
+//                         : ticket.triage === 'L3' ? 'bg-yellow-300 text-black'
+//                           : ticket.triage === 'L4' ? 'bg-green-400 text-green-950'
 //                             : 'bg-blue-400 text-blue-50'
 //                   }`}>
-//                     {ticket.priority}
+//                     {ticket.triage}
 //                   </span>
 //                 </td>
 //                 <td className="px-4 py-2 text-black">{ticket.category}</td>
@@ -336,7 +336,7 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
     navigate(`/ticket/${ticketId}`)
   }
 
-  const getPriorityLabel = (level) => {
+  const getTriageLabel = (level) => {
     switch (level) {
       case 'L1': return 'Critical'
       case 'L2': return 'High'
@@ -359,10 +359,10 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
             <tr>
               {[
                 { key: "source", label: "Project Name" },
-                { key: "ticket_id", label: "Ticket ID" },
+                { key: "ticket_id", label: "ID" },
                 { key: "title", label: "Title" },
                 {
-                  key: "priority",
+                  key: "triage",
                   label: (
                     <span>
                       Triage Level <span className="text-xs text-gray-500">(AI generated)</span>
@@ -379,12 +379,12 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                 },
                 { key: "status", label: "Status" },
                 { key: "assigned_to", label: "Suggested Employee" },
-                { key: "ticket_priority", label: "Ticket Priority" }
+                { key: "ticket_triage", label: "Priority" }
               ].map(col => (
                 <th key={col.key} className="px-4 py-2 text-left text-black">
                   <div className="flex items-center space-x-1">
                     <span>{col.label}</span>
-                    {col.key !== 'ticket_priority' && (
+                    {col.key !== 'ticket_triage' && (
                       <button
                         onClick={() => onSort(col.key)}
                         className="text-xs text-blue-500 hover:underline"
@@ -407,19 +407,19 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                 <td className="px-4 py-2 text-black">{ticket.title}</td>
                 <td className="px-4 py-2">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ticket.priority === 'L1' ? 'bg-red-500 text-white'
-                      : ticket.priority === 'L2' ? 'bg-orange-400 text-white'
-                        : ticket.priority === 'L3' ? 'bg-yellow-400 text-white'
-                          : ticket.priority === 'L4' ? 'bg-yellow-700 text-white'
+                    ticket.triage === 'L1' ? 'bg-red-500 text-white'
+                      : ticket.triage === 'L2' ? 'bg-orange-400 text-white'
+                        : ticket.triage === 'L3' ? 'bg-yellow-400 text-white'
+                          : ticket.triage === 'L4' ? 'bg-yellow-700 text-white'
                             : 'bg-green-600 text-white'
                   }`}>
-                    {ticket.priority}
+                    {ticket.triage}
                   </span>
                 </td>
                 <td className="px-4 py-2 text-black">{ticket.category}</td>
                 <td className="px-4 py-2 text-black">{ticket.status}</td>
                 <td className="px-4 py-2 text-black">{ticket.employee_name}</td>
-                <td className="px-4 py-2 text-black">{getPriorityLabel(ticket.priority)}</td>
+                <td className="px-4 py-2 text-black">{getTriageLabel(ticket.triage)}</td>
                 <td className="px-4 py-2 text-black">
                   <button
                     onClick={() => handleView(ticket.ticket_id)}
@@ -449,13 +449,13 @@ export default function Dashboard({ onView }) {
     const [filterType, setFilterType] = useState('')
     const [filterValue, setFilterValue] = useState('')
     const [filterOptions, setFilterOptions] = useState({
-        priority: ['L1', 'L2', 'L3', 'L4', 'L5'],
+        triage: ['L1', 'L2', 'L3', 'L4', 'L5'],
         category: [],
         status: [],
         assigned_to: [],
         source: []
     })
-    const [priorityCounts, setPriorityCounts] = useState([])
+    const [triageCounts, setTriageCounts] = useState([])
     const [categoryCounts, setCategoryCounts] = useState([])
     const [sortColumn, setSortColumn] = useState(null)
     const [sortOrder, setSortOrder] = useState('asc')
@@ -471,18 +471,18 @@ export default function Dashboard({ onView }) {
         setTicketDetails(res.data.details)
         setCategoryCounts(res.data.distinct_categories)
         setFilterOptions({
-            priority: ['L1', 'L2', 'L3', 'L4', 'L5'],
+            triage: ['L1', 'L2', 'L3', 'L4', 'L5'],
             category: res.data.distinct_categories,
             status: res.data.distinct_status,
             assigned_to: res.data.distinct_assigned_to,
             source: res.data.distinct_sources
         })
         const counts = ['L1', 'L2', 'L3', 'L4', 'L5'].map(level => ({
-            priority: level,
-            count: res.data.table_contents.filter(ticket => ticket.priority === level).length
+            triage: level,
+            count: res.data.table_contents.filter(ticket => ticket.triage === level).length
         }))
         
-        setPriorityCounts(counts)
+        setTriageCounts(counts)
         const statusCounts = res.data.distinct_status.map(status => ({
                 status,
                 count: res.data.table_contents.filter(ticket => ticket.status === status).length
@@ -513,7 +513,7 @@ export default function Dashboard({ onView }) {
     .filter(ticket => {
       if (!filterType || !filterValue) return true
       const keyMap = {
-        priority: 'priority',
+        triage: 'triage',
         category: 'category',
         status: 'status',
         assigned_to: 'employee_name',
@@ -548,8 +548,8 @@ export default function Dashboard({ onView }) {
           <InfoCard title="Total Tickets" value={ticketCount} error={error} loading={loading} />
             <BarChartCard
             title="Ticket Priorities"
-            data={priorityCounts}
-            dataKeyX="priority"
+            data={triageCounts}
+            dataKeyX="triage"
             dataKeyY="count"
             color="#3B82F6"
             />
@@ -569,7 +569,7 @@ export default function Dashboard({ onView }) {
         </div> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <CombinedInfoCard ticketCount={ticketCount} sourceData={sourceCounts} />
-          <BarChartCard title="Ticket Priorities" data={priorityCounts} dataKeyX="priority" dataKeyY="count" />
+          <BarChartCard title="Ticket Priorities" data={triageCounts} dataKeyX="triage" dataKeyY="count" />
           <BarChartCard title="Ticket Statuses" data={statusCounts} dataKeyX="status" dataKeyY="count" />
           <PieChartCard title="Category Distribution" data={categoryCounts} dataKey="count" nameKey="category" />
         </div>
@@ -607,11 +607,11 @@ export default function Dashboard({ onView }) {
               }}
             >
               <option value="">Filter by</option>
-              <option value="priority">Triage</option>
+              <option value="triage">Triage</option>
               <option value="category">Category</option>
               <option value="status">Status</option>
               <option value="assigned_to">Assigned To</option>
-              <option value="source">Source</option>
+              <option value="source">Project Name</option>
             </select>
 
             <select

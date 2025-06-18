@@ -19,7 +19,7 @@ def assign_ticket(ticket_id: str, conn):
 
         # Step 1: Get processed ticket category and priority
         cursor.execute("""
-            SELECT category, priority FROM processed 
+            SELECT category, triage FROM processed 
             WHERE ticket_id = %s LIMIT 1
         """, (ticket_id,))
         res = cursor.fetchone()
@@ -27,22 +27,22 @@ def assign_ticket(ticket_id: str, conn):
             print(f"[WARN] No processed ticket found with ID {ticket_id}")
             return False
 
-        raw_category, raw_priority = res
+        raw_category, raw_triage = res
         category = raw_category.strip()
-        priority = raw_priority.strip()
+        triage = raw_triage.strip()
 
-        print(f"→ category: '{category}' | priority: '{priority}'")
+        print(f"→ category: '{category}' | triage: '{triage}'")
 
         # Step 2: Query for matching employee
         cursor.execute("""
             SELECT employee_id FROM employee 
             WHERE TRIM(category) = %s AND TRIM(triage) = %s AND role = 'P'
             LIMIT 1
-        """, (category, priority))
+        """, (category, triage))
         aidz = cursor.fetchone()
 
         if not aidz:
-            print(f"[WARN] No employee found for category='{category}', priority='{priority}'")
+            print(f"[WARN] No employee found for category='{category}', triage='{triage}'")
             return False
 
         employee_id = aidz[0]

@@ -9,8 +9,8 @@ import axios from 'axios'
 //     { label: "Reported Date", value: ticket.ticket_reported_date },
 //     { label: "Summary", value: ticket.ticket_summary },
 //     { label: "Description", value: ticket.ticket_description },
-//     { label: "Priority", value: ticket.ticket_priority },
-//     { label: "Priority Reason", value: ticket.ticket_priority_reason },
+//     { label: "Triage", value: ticket.ticket_triage },
+//     { label: "triage Reason", value: ticket.ticket_triage_reason },
 //     { label: "Category", value: ticket.ticket_category },
 //     { label: "Category Reason", value: ticket.ticket_category_reason },
 //     { label: "Assigned Employee", value: ticket.ticket_assigned_employee },
@@ -31,19 +31,19 @@ import axios from 'axios'
 import { HelpCircle } from 'lucide-react'
 
 function TicketDetails({ ticket }) {
-    const [showPriorityReason, setShowPriorityReason] = useState(false)
+    const [showTriageReason, setShowTriageReason] = useState(false)
     const [showCategoryReason, setShowCategoryReason] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const [saving, setSaving] = useState(false)
 
     const [formData, setFormData] = useState({
-        priority: ticket.ticket_priority,
+        triage: ticket.ticket_triage,
         status: ticket.ticket_status,
         category: ticket.ticket_category
     })
 
     const [options, setOptions] = useState({
-        priorities: [],
+        triages: [],
         categories: [],
         statuses: []
     })
@@ -52,7 +52,7 @@ function TicketDetails({ ticket }) {
             try {
             const res = await axios.get("http://localhost:8000/ticket_data")
             setOptions({
-                priorities: res.data.distinct_priorities || [],
+                triages: res.data.distinct_triages || [],
                 categories: res.data.distinct_categories || [],
                 statuses: res.data.distinct_status || [],
             })
@@ -73,7 +73,7 @@ function TicketDetails({ ticket }) {
     setSaving(true)
     try {
       await axios.put(`http://localhost:8000/tickets/${ticket.ticket_id}`, {
-        priority: formData.priority,
+        triage: formData.triage,
         status: formData.status,
         category: formData.category
       })
@@ -89,7 +89,7 @@ function TicketDetails({ ticket }) {
 
   const handleCancel = () => {
     setFormData({
-      priority: ticket.ticket_priority,
+      triage: ticket.ticket_triage,
       status: ticket.ticket_status,
       category: ticket.ticket_category
     })
@@ -162,25 +162,25 @@ function TicketDetails({ ticket }) {
               <div className="flex items-center space-x-3">
                 {editMode ? (
                     <select
-                    value={formData.priority}
-                    onChange={(e) => handleChange("priority", e.target.value)}
+                    value={formData.triage}
+                    onChange={(e) => handleChange("triage", e.target.value)}
                     className="appearance-none bg-white border border-gray-300 text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                    {options.priorities.map((p) => (
+                    {options.triages.map((p) => (
                         <option key={p} value={p}>{p}</option>
                     ))}
                     </select>
                 ) : (
                   <span className="px-4 py-1 rounded-full text-sm font-semibold bg-blue-500 text-white">
-                    {formData.priority}
+                    {formData.triage}
                   </span>
                 )}
-                <button onClick={() => setShowPriorityReason(!showPriorityReason)}>
+                <button onClick={() => setShowTriageReason(!showTriageReason)}>
                   <HelpCircle size={18} className="text-gray-500 hover:text-gray-700" />
                 </button>
               </div>
-              {showPriorityReason && (
-                <p className="mt-2 text-gray-500 text-sm">{ticket.ticket_priority_reason}</p>
+              {showTriageReason && (
+                <p className="mt-2 text-gray-500 text-sm">{ticket.ticket_triage_reason}</p>
               )}
             </div>
 

@@ -36,7 +36,7 @@ def get_ticket_data():
 
     # Get ticket details
     cursor.execute("""
-        SELECT M.ticket_id, M.title, M.status, M.source, P.summary, P.priority, 
+        SELECT M.ticket_id, M.title, M.status, M.source, P.summary, P.triage, 
                P.category, P.solution, E.employee_name
         FROM main_table AS M, processed AS P, employee AS E, assign AS A
         WHERE M.ticket_id = P.ticket_id
@@ -50,7 +50,7 @@ def get_ticket_data():
         final_table.append({
             "ticket_id": row[0],
             "title": row[1],
-            "priority": row[5],
+            "triage": row[5],
             "category": row[6],
             "status": row[2],
             "employee_name": row[8],
@@ -62,14 +62,14 @@ def get_ticket_data():
     # reported_date from main_table
     # summary from processed
     # description from main_table
-    # priority from processed
-    # priority_reason (no reason right now, will add later. use placeholder till then)
+    # triage from processed
+    # triage_reason (no reason right now, will add later. use placeholder till then)
     # category from processed
     # category_reason (use placeholder)
     # assigned employee from assign
     # solution from processed
-    cursor.execute("""select m.ticket_id, m.title, m.status, m.reported_date, p.summary, m.description, p.priority, p.category, e.employee_name, p.solution
-from main_table as m, processed as p, employee as e, assign as a
+    cursor.execute("""select m.ticket_id, m.title, m.status, m.reported_date, p.summary, m.description, p.triage, p.category, e.employee_name, p.solution, r.triage_reason, r.category_reason
+from main_table as m, processed as p, employee as e, assign as a, reasons as r
 where m.ticket_id = p.ticket_id
 and m.ticket_id = a.ticket_id
 and a.assigned_id = e.employee_id;""")
@@ -83,10 +83,10 @@ and a.assigned_id = e.employee_id;""")
             "ticket_reported_date":r[3],
             "ticket_summary":r[4],
             "ticket_description":r[5],
-            "ticket_priority":r[6],
-            "ticket_priority_reason":"No reason for priority yet",
+            "ticket_triage":r[6],
+            "ticket_triage_reason":r[10],
             "ticket_category":r[7],
-            "ticket_category_reason":"No reason for category yet",
+            "ticket_category_reason":r[11],
             "ticket_assigned_employee":r[8],
             "ticket_solution":r[9]
         })
@@ -105,7 +105,7 @@ and a.assigned_id = e.employee_id;""")
     c = cursor.fetchall()
     for row in c:
         elist.append(row[0])
-    cursor.execute("select distinct source from main_table;")
+    cursor.execute("select distinct source from main_table order by source;")
     sourcelist = []
     c = cursor.fetchall()
     for row in c:
@@ -116,7 +116,7 @@ and a.assigned_id = e.employee_id;""")
         "ticket_count": len(ticket_ids),
         "table_contents": final_table,
         "details":details,
-        "distinct_priorities":[f"L{i}" for i in range(1,6)],
+        "distinct_triages":[f"L{i}" for i in range(1,6)],
         "distinct_categories":clist,
         "distinct_status":slist,
         "distinct_assigned_to":elist,
@@ -142,10 +142,10 @@ def update_ticket(ticket_id: str, update: TicketUpdate):
         print("ABOUT TO DO SQL CHANGE 🤢")
         cursor.execute("""
             UPDATE processed
-            SET priority = %s,
+            SET triage = %s,
                 category = %s
             WHERE ticket_id = %s
-        """, (update.priority, update.category, ticket_id))
+        """, (update.triage, update.category, ticket_id))
         conn.commit()
         cursor.execute("""UPDATE main_table
         SET status = %s
@@ -154,7 +154,7 @@ def update_ticket(ticket_id: str, update: TicketUpdate):
         assign_ticket(ticket_id,conn)
         cursor.close()
         conn.close()
-        print(f"Updated ticket {ticket_id} with priority={update.priority}, status={update.status}, category={update.category}")
+        print(f"Updated ticket {ticket_id} with triage={update.triage}, status={update.status}, category={update.category}")
 
         return {"message": "Ticket updated successfully"}
     except Exception as e:
