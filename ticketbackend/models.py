@@ -6,4 +6,4 @@ class TicketUpdate(BaseModel):
     
 class ChatQuery(BaseModel):
     session_id: str
-    question: str
+    user_query: str

@@ -4,7 +4,7 @@ import mysql.connector
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 import numpy as np
-
+from database import get_connection
 load_dotenv()
 
 # === LanceDB config ===
@@ -15,12 +15,7 @@ TABLE_NAME = "tickets"
 embedding_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 # === Connect to MySQL ===
-conn = mysql.connector.connect(
-    host=os.getenv("MYSQL_HOST"),
-    user=os.getenv("MYSQL_USER"),
-    password=os.getenv("MYSQL_PASSWORD"),
-    database=os.getenv("MYSQL_DB")
-)
+conn = get_connection()
 cursor = conn.cursor()
 cursor.execute("""
     SELECT p.ticket_id, m.title, p.summary, p.solution, p.category
@@ -39,12 +34,16 @@ if TABLE_NAME in db.table_names():
 
 # === Create new empty table ===
 dummy_row = [{
-    "ticket_id": "dummy",
-    "title": "dummy title",
-    "summary": "dummy summary",
-    "solution": "dummy solution",
-    "category": "dummy category",
-    "vector": embedding_model.encode("dummy summary").tolist(),
+    "ticket_id": "No ID",
+    "title": "No title",
+    "status": "No status",
+    "reported_date": str("No date"),
+    "summary": "No summary",
+    "description": "No description",
+    "triage": "No triage",
+    "category": "No category",
+    "solution": "No solution",
+    "vector": embedding_model.encode("No summary").tolist(),
 }]
 table = db.create_table(TABLE_NAME, data=dummy_row)
 # Remove dummy row immediately
@@ -55,29 +54,56 @@ print("✅ Created fresh LanceDB table.")
 seen_ids = set()
 unique_data = []
 
-for ticket_id, title, summary, solution, category in rows:
+cursor.execute("""
+    SELECT m.ticket_id, m.title, m.status, m.reported_date, p.summary,
+           m.description, p.triage, p.category, p.solution
+    FROM main_table AS m
+    JOIN processed AS p ON m.ticket_id = p.ticket_id
+    JOIN assign AS a ON m.ticket_id = a.ticket_id
+""")
+rows = cursor.fetchall()
+
+seen_ids = set()
+unique_data = []
+
+for row in rows:
+    (ticket_id, title, status, reported_date, summary, 
+     description, triage, category, solution) = row
+
     if ticket_id in seen_ids:
         continue
     seen_ids.add(ticket_id)
 
-    summary_text = summary or ""
-    vector = embedding_model.encode(summary_text).tolist()
+    # Embed relevant context
+    embed_text = (
+        f"Ticket ID: {ticket_id}\n"
+        f"Title: {title}\n"
+        f"Status: {status}\n"
+        f"Reported Date: {reported_date}\n"
+        f"Summary: {summary}\n"
+        f"Description: {description}\n"
+        f"Triage: {triage}\n"
+        f"Category: {category}\n"
+        f"Solution: {solution}"
+    )   
+    vector = embedding_model.encode(embed_text).tolist()
 
     unique_data.append({
         "ticket_id": ticket_id,
-        "title": title or "",
-        "summary": summary_text,
-        "solution": solution or "",
-        "category": category or "",
+        "title": title,
+        "status": status,
+        "reported_date": str(reported_date),
+        "summary": summary,
+        "description": description,
+        "triage": triage,
+        "category": category,
+        "solution": solution,
         "vector": vector
     })
 
-# === Add to LanceDB ===
 if unique_data:
     table.add(unique_data)
-    print(f"✅ Added {len(unique_data)} unique tickets to LanceDB.")
-else:
-    print("⚠️ No unique ticket data found.")
+    print(f"✅ Added {len(unique_data)} enriched tickets to LanceDB.")
 
 cursor.close()
 conn.close()

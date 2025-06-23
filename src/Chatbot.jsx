@@ -1,26 +1,76 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { MessageCircle } from 'lucide-react'
 
+// 🔐 Generate or reuse session ID
+const getSessionId = () => {
+  const stored = localStorage.getItem('chat_session_id')
+  if (stored) return stored
+  const newId = crypto.randomUUID()
+  localStorage.setItem('chat_session_id', newId)
+  return newId
+}
+
 export default function Chatbot() {
+  const [sessionId] = useState(getSessionId())
   const [query, setQuery] = useState('')
-  const [response, setResponse] = useState('')
   const [loading, setLoading] = useState(false)
-  const [open, setOpen] = useState(false) // toggle chat window
+  const [open, setOpen] = useState(false)
+  const [messages, setMessages] = useState([])
+
+  // 🔁 Fetch chat history on open
+  useEffect(() => {
+    if (!open) return
+    axios
+      .get('http://127.0.0.1:8000/chat/history', {
+        params: { session_id: sessionId },
+      })
+      .then((res) => {
+        if (Array.isArray(res.data.history)) {
+          const formatted = res.data.history.map((msg) => ({
+            sender: msg.sender,
+            text: msg.content,
+          }))
+          setMessages(formatted)
+        }
+      })
+      .catch((err) => {
+        console.error('❌ Error fetching history:', err)
+      })
+  }, [open, sessionId])
+
+  // 🔽 Scroll to bottom on new messages
+  useEffect(() => {
+    const el = document.querySelector('.chat-scroll')
+    if (el) el.scrollTop = el.scrollHeight
+  }, [messages])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!query.trim()) return
+
+    const userMsg = { sender: 'user', text: query }
+    setMessages((prev) => [...prev, userMsg])
     setLoading(true)
-    setResponse('')
+    setQuery('')
 
     try {
-      const res = await axios.get('http://127.0.0.1:8000/chat', {
-        params: { user_query: query },
+      const res = await axios.post('http://127.0.0.1:8000/chat', {
+        user_query: query,
+        session_id: sessionId,
       })
-      setResponse(res.data.response || res.data.error || 'No response')
+
+      const botReply = {
+        sender: 'bot',
+        text: res.data.response || '🤖 No response',
+      }
+      setMessages((prev) => [...prev, botReply])
     } catch (error) {
-      console.error('Chatbot request error:', error)
-      setResponse('Error contacting server')
+      console.error('❌ Error contacting server:', error)
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: '⚠️ Error contacting server.' },
+      ])
     } finally {
       setLoading(false)
     }
@@ -36,7 +86,7 @@ export default function Chatbot() {
           <MessageCircle className="w-6 h-6" />
         </button>
       ) : (
-        <div className="w-80 p-4 bg-white border border-gray-200 rounded-2xl shadow-2xl">
+        <div className="w-80 h-[500px] p-4 bg-white border border-gray-200 rounded-2xl shadow-2xl flex flex-col">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-bold text-gray-800">💬 Ticket Chatbot</h2>
             <button
@@ -46,7 +96,26 @@ export default function Chatbot() {
               ✖
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-3">
+
+          <div className="flex-1 overflow-y-auto space-y-2 pr-2 mb-3 chat-scroll">
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
+                  msg.sender === 'user'
+                    ? 'bg-blue-100 text-blue-900 ml-auto rounded-br-none'
+                    : 'bg-gray-200 text-gray-900 mr-auto rounded-bl-none'
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))}
+            {loading && (
+              <div className="text-sm italic text-gray-500">Typing...</div>
+            )}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-2 mt-auto">
             <input
               type="text"
               placeholder="Ask something..."
@@ -62,12 +131,6 @@ export default function Chatbot() {
               {loading ? 'Thinking...' : 'Ask'}
             </button>
           </form>
-          <div className="mt-3">
-            <h3 className="text-sm font-semibold text-gray-700 mb-1">Response:</h3>
-            <div className="bg-gray-100 p-3 rounded-xl text-gray-800 text-sm whitespace-pre-wrap min-h-[60px]">
-              {response || 'No answer yet.'}
-            </div>
-          </div>
         </div>
       )}
     </div>
