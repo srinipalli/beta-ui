@@ -30,6 +30,7 @@ export default function Chatbot() {
           const formatted = res.data.history.map((msg) => ({
             sender: msg.sender,
             text: msg.content,
+            timestamp: msg.timestamp || null, // optional
           }))
           setMessages(formatted)
         }
@@ -44,6 +45,24 @@ export default function Chatbot() {
     const el = document.querySelector('.chat-scroll')
     if (el) el.scrollTop = el.scrollHeight
   }, [messages])
+
+  // ⎋ Escape to close
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [])
+
+  // 🔍 Autofocus input when open
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => {
+        document.querySelector('#chat-input')?.focus()
+      }, 100)
+    }
+  }, [open])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -99,15 +118,27 @@ export default function Chatbot() {
 
           <div className="flex-1 overflow-y-auto space-y-2 pr-2 mb-3 chat-scroll">
             {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
-                  msg.sender === 'user'
-                    ? 'bg-blue-100 text-blue-900 ml-auto rounded-br-none'
-                    : 'bg-gray-200 text-gray-900 mr-auto rounded-bl-none'
-                }`}
-              >
-                {msg.text}
+              <div key={idx} className="flex flex-col">
+                <div
+                  className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
+                    msg.sender === 'user'
+                      ? 'bg-blue-100 text-blue-900 ml-auto rounded-br-none'
+                      : 'bg-gray-200 text-gray-900 mr-auto rounded-bl-none'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+                {msg.timestamp && (
+                  <small
+                    className={`text-[10px] mt-0.5 ${
+                      msg.sender === 'user'
+                        ? 'text-right text-gray-400'
+                        : 'text-left text-gray-500'
+                    }`}
+                  >
+                    {msg.timestamp}
+                  </small>
+                )}
               </div>
             ))}
             {loading && (
@@ -115,13 +146,23 @@ export default function Chatbot() {
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-2 mt-auto">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-2 mt-auto"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSubmit(e)
+              }
+            }}
+          >
             <input
               type="text"
+              id="chat-input"
               placeholder="Ask something..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full px-3 py-2 border rounded-xl border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              className="w-full px-3 py-2 border rounded-xl border-gray-300 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="submit"

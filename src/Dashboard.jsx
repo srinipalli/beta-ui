@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import Chatbot from "./Chatbot"
 import { Tooltip as ReactTooltip } from "react-tooltip"
 import ISIcon from './logo.jpg'
-import { HelpCircle } from "lucide-react"
+import { HelpCircle, Link } from "lucide-react"
 
 const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#14B8A6"]
 
@@ -18,19 +18,19 @@ const STATUS_COLORS = {
 }
 
 const triageTooltips = {
-  L1: "Critical",
-  L2: "High",
+  L1: "Planning",
+  L2: "Low",
   L3: "Medium",
-  L4: "Low",
-  L5: "Planned",
+  L4: "High",
+  L5: "Critical",
 }
 
 const triageLabels = {
-  L1: "Critical",
-  L2: "High",
+  L1: "Planning",
+  L2: "Low",
   L3: "Medium",
-  L4: "Low",
-  L5: "Planned",
+  L4: "High",
+  L5: "Critical",
 }
 
 // --- HelpPopover Component ---
@@ -45,32 +45,32 @@ function HelpPopover({ content }) {
         aria-label="Help"
       />
       {visible && (
-  <div
-    className="absolute right-0 mt-2 w-80 z-50 p-4 border border-blue-300 rounded-lg shadow-lg text-sm text-gray-700"
-    style={{
-      top: "28px",
-      // backgroundColor: "rgb(243, 230, 242)", // <-- transparent white
-      backgroundColor: "rgb(255, 255, 255)", // <-- transparent white
-      backdropFilter: "blur(2px)", // Optional: adds a blur effect behind popup
-      opacity: 0.95
-    }}
-    onMouseEnter={() => setVisible(true)}
-    onMouseLeave={() => setVisible(false)}
-  >
-    {content}
-  </div>
-)}
+        <div
+          className="absolute right-0 mt-2 w-80 z-50 p-4 border border-blue-300 rounded-lg shadow-lg text-sm text-gray-700"
+          style={{
+            top: "28px",
+            backgroundColor: "rgb(255, 255, 255)",
+            backdropFilter: "blur(2px)",
+            opacity: 0.95
+          }}
+          onMouseEnter={() => setVisible(true)}
+          onMouseLeave={() => setVisible(false)}
+        >
+          {content}
+        </div>
+      )}
     </div>
   )
 }
 
+// Card with refined hover effects
 function CombinedInfoCard({ ticketCount, sourceData }) {
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
     const RADIAN = Math.PI / 180
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5
     const x = cx + radius * Math.cos(-midAngle * RADIAN)
     const y = cy + radius * Math.sin(-midAngle * RADIAN)
-    const value = sourceData[index].count
+    const value = sourceData[index]?.count
 
     return (
       <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
@@ -80,7 +80,9 @@ function CombinedInfoCard({ ticketCount, sourceData }) {
   }
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-3 border border-gray-200 h-[320px] flex flex-col ">
+    <div className="bg-white shadow-md rounded-2xl p-3 border border-gray-200 h-[320px] flex flex-col
+                    transition-all duration-300 ease-in-out
+                    hover:scale-[1.01] hover:shadow-xl"> {/* Refined hover effects */}
       <h2 className="text-lg font-semibold text-gray-700">Project Overview</h2>
       <div className="text-5xl font-bold text-blue-600 mt-2">{ticketCount}</div>
       <div className="flex flex-1 items-center justify-between mt-4 gap-4">
@@ -120,25 +122,16 @@ function CombinedInfoCard({ ticketCount, sourceData }) {
   )
 }
 
+// Card with refined hover effects
+// --- Refactored PieChartCard to handle many categories ---
+// --- Updated PieChartCard for better detail visibility ---
+// --- Updated PieChartCard with labels in legend ---
 function PieChartCard({ title, data, dataKey, nameKey }) {
-  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
-    const RADIAN = Math.PI / 180
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-    const y = cy + radius * Math.sin(-midAngle * RADIAN)
-    const value = data[index][dataKey]
-
-    return (
-      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
-        {value}
-      </text>
-    )
-  }
-
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-[320px] flex flex-col">
+    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 h-[320px] flex flex-col transition-all duration-300 ease-in-out hover:scale-[1.01] hover:shadow-xl">
       <h2 className="text-lg font-semibold text-gray-700 mb-2">{title}</h2>
-      <div className="flex flex-1 items-center justify-between mt-2 gap-4">
+      <div className="flex flex-1 items-center gap-4 mt-2">
+        {/* Pie Chart Section - No labels inside */}
         <div className="w-1/2 flex justify-center items-center">
           <ResponsiveContainer width={140} height={140}>
             <PieChart>
@@ -149,7 +142,6 @@ function PieChartCard({ title, data, dataKey, nameKey }) {
                 cx="50%"
                 cy="50%"
                 outerRadius={60}
-                label={renderCustomLabel}
                 labelLine={false}
               >
                 {data.map((_, index) => (
@@ -160,22 +152,24 @@ function PieChartCard({ title, data, dataKey, nameKey }) {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="w-1/2 text-sm text-gray-700 space-y-1">
-          {data.map((entry, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-              <span>
-                {entry[nameKey]} ({entry[dataKey]})
-              </span>
-            </div>
-          ))}
+        {/* Legend Section - Numbers next to category names */}
+        <div className="w-1/2 text-sm text-gray-700 overflow-y-auto" style={{ maxHeight: '250px' }}>
+          <div className="flex flex-col gap-1">
+            {data.map((entry, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                  <span>{entry[nameKey]}</span>
+                </div>
+                <span>({entry[dataKey]})</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
-  )
-}
-
-const CustomXAxisTick = ({ x, y, payload }) => {
+  );
+}const CustomXAxisTick = ({ x, y, payload }) => {
   const words = payload.value.split(" ")
   return (
     <g transform={`translate(${x},${y})`}>
@@ -188,7 +182,7 @@ const CustomXAxisTick = ({ x, y, payload }) => {
   )
 }
 
-// --- Modified StatusBarChartCard with Help Icon ---
+// --- Modified StatusBarChartCard with refined hover effects ---
 function StatusBarChartCard({ title, data, dataKeyX, dataKeyY }) {
   const helpContent = (
     <ul className="list-disc pl-4 text-justify">
@@ -199,7 +193,9 @@ function StatusBarChartCard({ title, data, dataKeyX, dataKeyY }) {
     </ul>
   )
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 min-h-[300px] text-black relative">
+    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 min-h-[300px] text-black relative
+                    transition-all duration-300 ease-in-out
+                    hover:scale-[1.01] hover:shadow-xl"> {/* Refined hover effects */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
         <HelpPopover content={helpContent} />
@@ -223,28 +219,30 @@ function StatusBarChartCard({ title, data, dataKeyX, dataKeyY }) {
   )
 }
 
-// --- Modified BarChartCard (Triage Levels) with Help Icon ---
+// --- Modified BarChartCard (Triage Levels) with refined hover effects ---
 function BarChartCard({ title, data, dataKeyX, dataKeyY }) {
   const triageColors = {
-    L1: "#EF4444",
-    L2: "#FB923C",
+    L5: "#EF4444",
+    L4: "#FB923C",
     L3: "#FCD34D",
-    L4: "#896129",
-    L5: "#6FC276",
+    L2: "#896129",
+    L1: "#6FC276",
   }
 
   const helpContent = (
     <ul className="list-disc pl-4 ">
-      <li><b>L1</b> - The highest escalation level, often involving executive management or specialized external consultants.</li>
-      <li><b>L2</b> - External or vendor-level support, engaged when the issue requires intervention from outside the organization.</li>
+      <li><b>L5</b> - The highest escalation level, often involving executive management or specialized external consultants.</li>
+      <li><b>L4</b> - External or vendor-level support, engaged when the issue requires intervention from outside the organization.</li>
       <li><b>L3</b> - Advanced support for the most complex problems, usually involving subject matter experts or developers.</li>
-      <li><b>L4</b> - Handles more complex issues, often requiring specialized knowledge.</li>
-      <li><b>L5</b> - The last line of support, handling basic issues and initial troubleshooting.</li>
+      <li><b>L2</b> - Handles more complex issues, often requiring specialized knowledge.</li>
+      <li><b>L1</b> - The last line of support, handling basic issues and initial troubleshooting.</li>
     </ul>
   )
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 min-h-[300px] text-black relative">
+    <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 min-h-[300px] text-black relative
+                    transition-all duration-300 ease-in-out
+                    hover:scale-[1.01] hover:shadow-xl"> {/* Refined hover effects */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
         <HelpPopover content={helpContent} />
@@ -278,15 +276,15 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
   const getTriageLabel = (level) => {
     switch (level) {
       case "L1":
-        return "Critical"
+        return "Planning"
       case "L2":
-        return "High"
+        return "Low"
       case "L3":
         return "Medium"
       case "L4":
-        return "Low"
+        return "High"
       case "L5":
-        return "Planned"
+        return "Critical"
       default:
         return level
     }
@@ -310,7 +308,7 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                   key: "triage",
                   label: (
                     <span>
-                      Triage Level <span className="text-xs text-gray-500">(AI generated)</span>
+                      Priority Level <span className="text-xs text-gray-500">(AI)</span>
                     </span>
                   ),
                 },
@@ -318,7 +316,7 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                   key: "category",
                   label: (
                     <span>
-                      Category <span className="text-xs text-gray-500">(AI generated)</span>
+                      Category <span className="text-xs text-gray-500">(AI)</span>
                     </span>
                   ),
                 },
@@ -342,7 +340,7 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {tickets.map((ticket, index) => (
-              <tr key={index} className="hover:bg-gray-50">
+              <tr key={index} className="hover:bg-blue-50 transition duration-150 ease-in-out"> {/* Interactive row hover */}
                 <td className="px-4 py-2 text-black">{ticket.source}</td>
                 <td className="px-4 py-2 text-black">{ticket.ticket_id}</td>
                 <td className="px-4 py-2 text-black">{ticket.title}</td>
@@ -351,13 +349,13 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                     data-tooltip-id={`triage-tooltip-${index}`}
                     data-tooltip-content={triageTooltips[ticket.triage]}
                     className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      ticket.triage === "L1"
+                      ticket.triage === "L5"
                         ? "bg-red-500 text-white"
-                        : ticket.triage === "L2"
+                        : ticket.triage === "L4"
                           ? "bg-orange-400 text-white"
                           : ticket.triage === "L3"
                             ? "bg-yellow-400 text-white"
-                            : ticket.triage === "L4"
+                            : ticket.triage === "L2"
                               ? "bg-yellow-700 text-white"
                               : "bg-green-600 text-white"
                     }`}
@@ -374,7 +372,9 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
                 <td className="px-4 py-2 text-black">
                   <button
                     onClick={() => handleView(ticket.ticket_id)}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-3 py-1 bg-blue-500 text-white rounded
+                               hover:bg-blue-600 transition-all duration-200 ease-in-out
+                               hover:scale-105 hover:shadow-md" // Animated button
                   >
                     View
                   </button>
@@ -389,121 +389,155 @@ function TicketTable({ tickets, onSort, sortColumn, sortOrder }) {
 }
 
 export default function Dashboard({ onView }) {
-  const [ticketCount, setTicketCount] = useState(0)
-  const [processedTickets, setProcessedTickets] = useState([])
-  const [ticketDetails, setTicketDetails] = useState([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterType, setFilterType] = useState("")
-  const [filterValue, setFilterValue] = useState("")
+  const [allTickets, setAllTickets] = useState([]); // Store all original tickets
+  const [filteredTickets, setFilteredTickets] = useState([]); // Tickets after applying search and filter
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterValue, setFilterValue] = useState("");
   const [filterOptions, setFilterOptions] = useState({
     triage: ["L1", "L2", "L3", "L4", "L5"],
     category: [],
     status: [],
     assigned_to: [],
     source: [],
-  })
-  const [triageCounts, setTriageCounts] = useState([])
-  const [categoryCounts, setCategoryCounts] = useState([])
-  const [sortColumn, setSortColumn] = useState(null)
-  const [sortOrder, setSortOrder] = useState("asc")
-  const [statusCounts, setStatusCounts] = useState([])
-  const [sourceCounts, setSourceCounts] = useState([])
+  });
+  const [triageCounts, setTriageCounts] = useState([]);
+  const [categoryCounts, setCategoryCounts] = useState([]);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [statusCounts, setStatusCounts] = useState([]);
+  const [sourceCounts, setSourceCounts] = useState([]);
+  const navigate = useNavigate();
 
+  // Effect to fetch initial data
   useEffect(() => {
     fetch("http://localhost:8000/ticket_data")
       .then((res) => res.json())
       .then((data) => {
-        setTicketCount(data.ticket_count)
-        setProcessedTickets(data.table_contents)
-        setTicketDetails(data.details)
-        setCategoryCounts(data.distinct_categories)
+        setAllTickets(data.table_contents); // Store all tickets
         setFilterOptions({
           triage: ["L1", "L2", "L3", "L4", "L5"],
           category: data.distinct_categories,
           status: data.distinct_status,
           assigned_to: data.distinct_assigned_to,
           source: data.distinct_sources,
-        })
-        const counts = ["L1", "L2", "L3", "L4", "L5"].map((level) => ({
-          triage: level,
-          count: data.table_contents.filter((ticket) => ticket.triage === level).length,
-        }))
-        setTriageCounts(counts)
-        const statusCounts = data.distinct_status.map((status) => ({
-          status,
-          count: data.table_contents.filter((ticket) => ticket.status === status).length,
-        }))
-        setStatusCounts(statusCounts)
-        const sourceCounts = data.distinct_sources.map((source) => ({
-          source,
-          count: data.table_contents.filter((ticket) => ticket.source === source).length,
-        }))
-        setSourceCounts(sourceCounts)
-        const categoryCounts = data.distinct_categories.map((category) => ({
-          category,
-          count: data.table_contents.filter((ticket) => ticket.category === category).length,
-        }))
-        setCategoryCounts(categoryCounts)
+        });
       })
-      .catch((error) => console.error("Error fetching ticket data:", error))
-  }, [])
+      .catch((error) => console.error("Error fetching ticket data:", error));
+  }, []);
 
-  const filteredAndSortedTickets = processedTickets
-    .filter((ticket) => ticket.title.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()))
-    .filter((ticket) => {
-      if (!filterType || !filterValue) return true
-      const keyMap = {
-        triage: "triage",
-        category: "category",
-        status: "status",
-        assigned_to: "employee_name",
-        source: "source",
-      }
-      return String(ticket[keyMap[filterType]]).toLowerCase() === filterValue.toLowerCase()
-    })
-    .sort((a, b) => {
-      if (!sortColumn) return 0
+  // Effect to filter and sort tickets, and then update card data
+  useEffect(() => {
+    let currentFilteredTickets = allTickets
+      .filter((ticket) => ticket.title.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()))
+      .filter((ticket) => {
+        if (!filterType || !filterValue) return true;
+        const keyMap = {
+          triage: "triage",
+          category: "category",
+          status: "status",
+          assigned_to: "employee_name",
+          source: "source",
+        };
+        return String(ticket[keyMap[filterType]]).toLowerCase() === filterValue.toLowerCase();
+      })
+      .sort((a, b) => {
+        if (!sortColumn) return 0;
 
-      let valA, valB
+        let valA, valB;
+        if (sortColumn === "assigned_to") {
+          valA = a.employee_name?.toString().toLowerCase() || "";
+          valB = b.employee_name?.toString().toLowerCase() || "";
+        } else if (sortColumn === "ticket_triage") {
+          valA = triageLabels[a.triage]?.toLowerCase() || "";
+          valB = triageLabels[b.triage]?.toLowerCase() || "";
+        } else {
+          valA = a[sortColumn]?.toString().toLowerCase() || "";
+          valB = b[sortColumn]?.toString().toLowerCase() || "";
+        }
 
-      if (sortColumn === "assigned_to") {
-        valA = a.employee_name?.toString().toLowerCase() || ""
-        valB = b.employee_name?.toString().toLowerCase() || ""
-      } else if (sortColumn === "ticket_triage") {
-        valA = triageLabels[a.triage]?.toLowerCase() || ""
-        valB = triageLabels[b.triage]?.toLowerCase() || ""
-      } else {
-        valA = a[sortColumn]?.toString().toLowerCase() || ""
-        valB = b[sortColumn]?.toString().toLowerCase() || ""
-      }
+        if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+        if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
 
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1
-      return 0
-    })
+    setFilteredTickets(currentFilteredTickets);
+
+    // Update card data based on `currentFilteredTickets`
+    const newTriageCounts = ["L1", "L2", "L3", "L4", "L5"].map((level) => ({
+      triage: level,
+      count: currentFilteredTickets.filter((ticket) => ticket.triage === level).length,
+    }));
+    setTriageCounts(newTriageCounts);
+
+    const newStatusCounts = filterOptions.status.map((status) => ({
+      status,
+      count: currentFilteredTickets.filter((ticket) => ticket.status === status).length,
+    }));
+    setStatusCounts(newStatusCounts);
+
+    const newSourceCounts = filterOptions.source.map((source) => ({
+      source,
+      count: currentFilteredTickets.filter((ticket) => ticket.source === source).length,
+    }));
+    setSourceCounts(newSourceCounts);
+
+    const newCategoryCounts = filterOptions.category.map((category) => ({
+      category,
+      count: currentFilteredTickets.filter((ticket) => ticket.category === category).length,
+    }));
+    setCategoryCounts(newCategoryCounts);
+
+  }, [allTickets, searchQuery, filterType, filterValue, sortColumn, sortOrder, filterOptions.status, filterOptions.source, filterOptions.category]); // Dependencies
 
   const handleSort = (column) => {
     if (sortColumn === column) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      setSortColumn(column)
-      setSortOrder("asc")
+      setSortColumn(column);
+      setSortOrder("asc");
     }
-  }
-
+  };
+  
   return (
+    
     <div className="w-screen h-screen overflow-y-auto relative bg-gradient-to-br from-white to-gray-50">
-      <div className="flex items-start mb-2">
-        <img
-          src={ISIcon}
-          alt="VoltTix"
-          className="h-40 w-60 object-contain"
-          style={{ marginLeft: 20 }}
-        />
-      </div>
+      {/* New Header Section */}
+      <header className="bg-white p-4 shadow-md flex h-[12vh]">
+        <div className="flex items-center">
+          <img
+            src={ISIcon}
+            alt="GAPTix"
+            className="h-20 w-auto object-contain cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight ml-4"
+              style={{ fontFamily: 'serif' }}> {/* Added font-family: serif here */}
+            {/* Gradient text using inline styles for direct compatibility */}
+            <span style={{
+              backgroundImage: 'linear-gradient(to top, #6B46C1, #4299E1)', // Purple to Blue
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              color: 'transparent' // Fallback for browsers not supporting background-clip
+            }}>GAP</span>
+            <span style={{
+              backgroundImage: 'linear-gradient(to top, #6B46C1, #06B6D4)', // Blue to Cyan
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              color: 'transparent' // Fallback
+            }}>Tix</span>
+          </h1>
+        </div>
+        {/* You can add more header elements here, like navigation links or user info */}
+      </header>
+      {/* End New Header Section */}
+
       <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <CombinedInfoCard ticketCount={ticketCount} sourceData={sourceCounts} />
+          {/* Cards now have refined hover effects */}
+          <CombinedInfoCard ticketCount={filteredTickets.length} sourceData={sourceCounts} />
           <BarChartCard title="Triage Levels" data={triageCounts} dataKeyX="triage" dataKeyY="count" />
           <StatusBarChartCard title="Ticket Statuses" data={statusCounts} dataKeyX="status" dataKeyY="count" />
           <PieChartCard title="Category Distribution" data={categoryCounts} dataKey="count" nameKey="category" />
@@ -539,8 +573,8 @@ export default function Dashboard({ onView }) {
               className="appearance-none bg-white border border-gray-300 text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={filterType}
               onChange={(e) => {
-                setFilterType(e.target.value)
-                setFilterValue("")
+                setFilterType(e.target.value);
+                setFilterValue("");
               }}
             >
               <option value="">Filter by</option>
@@ -566,12 +600,11 @@ export default function Dashboard({ onView }) {
             </select>
           </div>
           <div className="w-full text-sm text-gray-600 ml-1">
-            {filteredAndSortedTickets.length} ticket{filteredAndSortedTickets.length !== 1 ? "s" : ""} found
+            {filteredTickets.length} ticket{filteredTickets.length !== 1 ? "s" : ""} found
           </div>
         </div>
         <TicketTable
-          tickets={filteredAndSortedTickets}
-          details={ticketDetails}
+          tickets={filteredTickets}
           onView={onView}
           onSort={handleSort}
           sortColumn={sortColumn}
@@ -582,5 +615,5 @@ export default function Dashboard({ onView }) {
         <Chatbot />
       </div>
     </div>
-  )
+  );
 }

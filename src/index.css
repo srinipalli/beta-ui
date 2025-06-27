@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -69,4 +71,24 @@ button:focus-visible {
 html, body {
   overflow-y: auto !important;
   height: auto !important;
+}
+.text-gradient-purple-blue {
+  background-image: linear-gradient(to right, #6D28D9, #4C1D95);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent; /* Fallback */
+}
+
+.text-gradient-blue-cyan {
+  background-image: linear-gradient(to right, #3B82F6, #0EA5E9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent; /* Fallback */
+}
+
+/* Custom CSS for text shadow (as Tailwind doesn't have native text-shadow utilities) */
+.text-shadow-custom {
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
 }
