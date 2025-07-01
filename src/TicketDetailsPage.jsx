@@ -1,7 +1,14 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { HelpCircle, FileText, Zap, Lightbulb, Calendar, Gauge, Tag, CheckCircle, User, Edit, ArrowRightLeft, Sparkles, ArrowLeft } from 'lucide-react'
+import { HelpCircle, FileText, Zap, Lightbulb, Calendar, Gauge, Tag, CheckCircle, User, ArrowLeft } from 'lucide-react'
+
+// A custom component for the "AI Generated" icon with a gradient background
+const AiGeneratedIcon = () => (
+    <span className="ml-2 px-2 py-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-bold rounded-full flex items-center shadow-lg">
+        AI Generated
+    </span>
+)
 
 function TicketDetails({ ticket }) {
     const [showTriageReason, setShowTriageReason] = useState(false)
@@ -70,11 +77,12 @@ function TicketDetails({ ticket }) {
     }
 
     // Helper component for content boxes with icons
-    const ContentBox = ({ title, children, showHelp = false, onHelpClick, helpText, icon: Icon }) => (
+    const ContentBox = ({ title, children, showHelp = false, onHelpClick, helpText, icon: Icon, aiIcon }) => (
         <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
             <div className="flex items-center mb-2">
                 {Icon && <Icon className="mr-3 text-gray-700" size={24} />}
                 <h3 className="text-2xl font-extrabold text-gray-800">{title}</h3>
+                {aiIcon && <AiGeneratedIcon />}
                 {showHelp && (
                     <button onClick={onHelpClick} className="ml-2">
                         <HelpCircle size={18} className="text-gray-500 hover:text-gray-700" />
@@ -132,13 +140,13 @@ function TicketDetails({ ticket }) {
                             <p className="text-xl text-gray-800">{ticket.ticket_title}</p>
                         </ContentBox>
 
-                        {/* Modified: Added Zap icon */}
-                        <ContentBox title="AI Summary" icon={Zap}>
+                        {/* Modified: Added Zap icon and aiIcon prop */}
+                        <ContentBox title="Summary" icon={Zap} aiIcon={true}>
                             <p className="text-lg text-gray-700">{ticket.ticket_summary || <em className="text-gray-400">Not available</em>}</p>
                         </ContentBox>
 
-                        {/* Modified: Added Lightbulb icon */}
-                        <ContentBox title="AI Suggested Solution" icon={Lightbulb}>
+                        {/* Modified: Added Lightbulb icon and aiIcon prop */}
+                        <ContentBox title="Suggested Solution" icon={Lightbulb} aiIcon={true}>
                             <p className="text-lg text-gray-700">{ticket.ticket_solution || <em className="text-gray-400">Not available</em>}</p>
                         </ContentBox>
                     </div>
@@ -151,8 +159,9 @@ function TicketDetails({ ticket }) {
                         </ContentBox>
 
                         <ContentBox
-                            title="Triage Level (AI)"
-                            icon={Gauge} // Added Gauge icon
+                            title="Triage Level"
+                            icon={Gauge}
+                            aiIcon={true}
                             showHelp={true}
                             onHelpClick={() => setShowTriageReason(!showTriageReason)}
                             helpText={showTriageReason ? ticket.ticket_triage_reason : ''}
@@ -177,8 +186,9 @@ function TicketDetails({ ticket }) {
                         </ContentBox>
 
                         <ContentBox
-                            title="AI Assigned Category"
-                            icon={Tag} // Added Tag icon
+                            title="Assigned Category"
+                            icon={Tag}
+                            aiIcon={true}
                             showHelp={true}
                             onHelpClick={() => setShowCategoryReason(!showCategoryReason)}
                             helpText={showCategoryReason ? ticket.ticket_category_reason : ''}
@@ -202,7 +212,7 @@ function TicketDetails({ ticket }) {
                             </div>
                         </ContentBox>
 
-                        <ContentBox title="Status" icon={CheckCircle}> {/* Added CheckCircle icon */}
+                        <ContentBox title="Status" icon={CheckCircle}>
                             {editMode ? (
                                 <select
                                     value={formData.status}
@@ -218,14 +228,14 @@ function TicketDetails({ ticket }) {
                             )}
                         </ContentBox>
 
-                        <ContentBox title="Assigned Employee" icon={User}> {/* Added User icon */}
+                        <ContentBox title="Assigned Employee" icon={User}>
                             <p className="text-lg text-gray-800">{ticket.ticket_assigned_employee}</p>
                         </ContentBox>
                     </div>
                 </div>
 
                 {/* FULL WIDTH - DESCRIPTION */}
-                <ContentBox title="Ticket Description" icon={FileText}> {/* Added FileText icon */}
+                <ContentBox title="Ticket Description" icon={FileText}>
                     <p className="text-lg text-gray-700 whitespace-pre-line">
                         {ticket.ticket_description || <em className="text-gray-400">Not available</em>}
                     </p>
@@ -236,53 +246,53 @@ function TicketDetails({ ticket }) {
 }
 
 export default function TicketDetailsPage() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [ticket, setTicket] = useState(null)
-  const [loading, setLoading] = useState(true)
+    const { id } = useParams()
+    const navigate = useNavigate()
+    const [ticket, setTicket] = useState(null)
+    const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    axios.get('http://localhost:8000/ticket_data')
-      .then(res => {
-        const details = res.data.details
-        const found = details.find(t => String(t.ticket_id) === id)
-        setTicket(found)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Failed to fetch ticket details', err)
-        setLoading(false)
-      })
-  }, [id])
+    useEffect(() => {
+        axios.get('http://localhost:8000/ticket_data')
+            .then(res => {
+                const details = res.data.details
+                const found = details.find(t => String(t.ticket_id) === id)
+                setTicket(found)
+                setLoading(false)
+            })
+            .catch(err => {
+                console.error('Failed to fetch ticket details', err)
+                setLoading(false)
+            })
+    }, [id])
 
-  if (loading) return <div className="p-6">Loading...</div>
+    if (loading) return <div className="p-6">Loading...</div>
 
-  if (!ticket) {
-    return (
-      <div className="p-6 text-red-500">
-        Ticket not found.
-        <button onClick={() => navigate(-1)} className="ml-4 underline text-blue-600">
-          Go Back
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen min-w-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="min-w-screen min-h-screen max-w-4xl bg-white shadow-xl rounded-2xl p-8">
-            {/* MODIFIED: Added a div to act as the container box with hover effect */}
-            <div className="inline-block mb-6 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center px-4 py-2 bg-gray-100 rounded-lg text-black font-semibold hover:bg-gray-200 transition-colors"
-                >
-                    <ArrowLeft size={18} className="mr-2" />
-                    Back to Dashboard
+    if (!ticket) {
+        return (
+            <div className="p-6 text-red-500">
+                Ticket not found.
+                <button onClick={() => navigate(-1)} className="ml-4 underline text-blue-600">
+                    Go Back
                 </button>
             </div>
-            <TicketDetails ticket={ticket} />
+        )
+    }
+
+    return (
+        <div className="min-h-screen min-w-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="min-w-screen min-h-screen max-w-4xl bg-white shadow-xl rounded-2xl p-8">
+                {/* MODIFIED: Added a div to act as the container box with hover effect */}
+                <div className="inline-block mb-6 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center px-4 py-2 bg-gray-100 rounded-lg text-black font-semibold hover:bg-gray-200 transition-colors"
+                    >
+                        <ArrowLeft size={18} className="mr-2" />
+                        Back to Dashboard
+                    </button>
+                </div>
+                <TicketDetails ticket={ticket} />
+            </div>
         </div>
-    </div>
-  )
+    )
 }
