@@ -10,7 +10,6 @@ try:
     from models import ChatQuery
 except ImportError:
     from ticketbackend.models import ChatQuery
-# from ticketbackend.lang import get_qa_chain
 from ticketbackend.lang import get_ticket_qa_chain, log_chat_message
 
 
@@ -47,13 +46,13 @@ def get_ticket_data():
     try:
         conn = get_connection()
 
-        # --- Fetch ticket_ids ---
+
         cursor_ids = conn.cursor()
         cursor_ids.execute("SELECT ticket_id FROM processed;")
         ticket_ids = [row[0] for row in cursor_ids.fetchall()]
         cursor_ids.close()
 
-        # --- Fetch main table contents ---
+
         cursor_final_table = conn.cursor()
         ticket_details_query = """
             SELECT M.ticket_id, M.title, M.status, M.source, P.summary, P.triage,
@@ -76,10 +75,10 @@ def get_ticket_data():
                 "category": row[6],
                 "status": row[2],
                 "employee_name": row[8],
-                "source": row[3] or "Other"  # Fix: Replace None with "Other"
+                "source": row[3] or "Other"
             })
 
-        # --- Fetch detailed ticket information ---
+
         cursor_details = conn.cursor()
         details_query = """
             SELECT m.ticket_id, m.title, m.status, m.reported_date, p.summary,
@@ -110,22 +109,22 @@ def get_ticket_data():
                 "ticket_category_reason": r[11],
                 "ticket_assigned_employee": r[8],
                 "ticket_solution": r[9],
-                "ticket_source": r[12] or "Other"  # Fix: Ensure it's never None
+                "ticket_source": r[12] or "Other"
             })
 
-        # --- Fetch distinct categories ---
+
         cursor_categories = conn.cursor()
         cursor_categories.execute("select distinct category from processed;")
         clist = [row[0] for row in cursor_categories.fetchall()]
         cursor_categories.close()
 
-        # --- Fetch distinct statuses ---
+
         cursor_status = conn.cursor()
         cursor_status.execute("select distinct status from main_table;")
         slist = [row[0] for row in cursor_status.fetchall()]
         cursor_status.close()
 
-        # --- Fetch distinct assigned employees ---
+
         cursor_employees = conn.cursor()
         cursor_employees.execute("""
             select distinct e.employee_name 
@@ -134,7 +133,7 @@ def get_ticket_data():
         elist = [row[0] for row in cursor_employees.fetchall()]
         cursor_employees.close()
 
-        # --- Fetch distinct sources ---
+
         cursor_sources = conn.cursor()
         cursor_sources.execute("select distinct source from main_table order by source;")
         sourcelist = [row[0] or "Other" for row in cursor_sources.fetchall()]  # Fix: Replace None
@@ -159,7 +158,6 @@ def get_ticket_data():
         if conn:
             conn.close()
 
-# The rest of your code (update_ticket, chat_query, etc.) remains the same
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from ticketbackend.database import get_connection
@@ -186,16 +184,15 @@ def update_ticket(ticket_id: str, update: TicketUpdate):
             WHERE ticket_id = %s
         """, (update.triage, update.category, ticket_id))
         conn.commit()
-        # The assign_ticket function might open its own cursor or use the passed conn
-        # Ensure it properly closes its cursors if it opens new ones
-        assign_ticket(ticket_id,conn) # Pass the connection to assign_ticket
+
+        assign_ticket(ticket_id,conn) 
         
-        # Ensure commit for main_table update as well
+
         cursor.execute("""UPDATE main_table
         SET status = %s
         WHERE ticket_id = %s
         """, (update.status, ticket_id))
-        conn.commit() # Commit this update too
+        conn.commit() 
 
         print(f"Updated ticket {ticket_id} with triage={update.triage}, status={update.status}, category={update.category}")
 
